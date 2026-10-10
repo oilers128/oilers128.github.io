@@ -74,6 +74,9 @@ nav{position:sticky;top:0;z-index:3;box-shadow:0 4px 16px #52335b08;flex-wrap:wr
 .collection-products .collection-owned{border-radius:10px;background:#e4f6e8;color:#26754c;width:100%;padding:13px;font-size:14px;font-weight:900;margin-top:10px;text-align:center}
 @media(max-width:760px){.collection-products{grid-template-columns:repeat(2,minmax(0,1fr));gap:12px}.collection-products .product .art{height:225px;font-size:100px}}
 @media(max-width:470px){.collection-products .product .art{height:185px;font-size:84px}.collection-products .product{padding:8px}.collection-products .product h3{font-size:14px;min-height:37px}.collection-products .product .price{font-size:19px}}
+
+.wheel-stage .wheel-spin-control{position:absolute;inset:36%;width:28%;height:28%;border-radius:50%;background:#fff;border:3px solid #e9b4d2;box-shadow:0 3px 12px #5d2c5d33;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:0;cursor:pointer;z-index:2;color:#b42d72;transform:rotate(calc(-1 * var(--wheel-angle, 0deg)))}
+.wheel-spin-control span:first-child{font-size:clamp(20px,5vw,32px);line-height:1.1}.wheel-spin-control .spin-word{font-size:clamp(11px,3vw,17px);font-weight:950;line-height:1.2}.wheel-spin-control:disabled{cursor:not-allowed;opacity:.85}.wheel-spin-control:focus-visible{outline:4px solid #7138a5;outline-offset:4px}
 </style></head><body>
 <header class="hero"><div><span class="pill">✦ THE CUTEST LITTLE SHOP ✦</span><h1>🧸 Plushie Pop!</h1><p>Big hugs. Tiny prices. Happy hearts. 💖<br><small style="font-size:13px;color:#5f476f">Includes your real plush photos plus cartoon-style kid art.</small></p></div><div class="header-actions"><span id="coin-balance" class="pill" aria-label="Your pretend coin balance">🥤 0 Pop Bucks</span><span class="mascot">🐰</span><button type="button" class="header-account" data-account aria-label="Open your profile"><span id="header-avatar" class="header-avatar">👤</span><span id="account-label">Sign in</span><span class="account-chevron">⌄</span></button></div></header>
 <nav aria-label="Main navigation"><button class="tab active" data-tab="shop"><span class="tab-icon" aria-hidden="true">🌈</span><span class="tab-label">Shop</span></button><button class="tab" data-tab="wheel"><span class="tab-icon" aria-hidden="true">🎡</span><span class="tab-label">Play</span></button><button class="tab" data-tab="collection"><span class="tab-icon" aria-hidden="true">🎒</span><span class="tab-label">My Plushies</span></button><button class="tab" data-tab="players"><span class="tab-icon" aria-hidden="true">👥</span><span class="tab-label">Players</span></button><button class="tab admin-tab" data-tab="inventory" hidden><span class="tab-icon" aria-hidden="true">📦</span><span class="tab-label">Inventory</span></button><button class="tab admin-tab" data-tab="sales" hidden><span class="tab-icon" aria-hidden="true">✨</span><span class="tab-label">Sales</span></button></nav>
@@ -185,7 +188,7 @@ async function refreshPlayers(){
  }catch(err){console.warn(err)}finally{playerRefresh=null}})();return playerRefresh;
 }
 function wheelPage(){
- $('#view').innerHTML=`<section style="text-align:center"><h2 class="heading">🎡 Spin for Pop Bucks!</h2><p class="muted">Win Pop Bucks for cute plushies. One spin per minute.</p><div class="wheel-pointer">▼</div><div class="wheel-stage" id="wheel-visual" style="transform:rotate(${wheelRotation}deg)">${prizes.map((p,i)=>`<span class="wheel-label" style="transform:rotate(${i*45+22.5}deg) translateY(-100px) rotate(-${i*45+22.5}deg)">${p}</span>`).join('')}<span class="wheel-center">🎁</span></div><p id="wheel-balance" style="font-size:22px;font-weight:900"></p><p id="wheel-result" class="muted" aria-live="polite"></p><button class="btn primary" id="spin-button" data-spin style="font-size:20px;padding:15px 30px"></button></section>`;updateWheel();
+ $('#view').innerHTML=`<section style="text-align:center"><h2 class="heading">🎡 Spin for Pop Bucks!</h2><p class="muted">Win Pop Bucks for cute plushies. One spin per minute.</p><div class="wheel-pointer">▼</div><div class="wheel-stage" id="wheel-visual" style="transform:rotate(${wheelRotation}deg)">${prizes.map((p,i)=>`<span class="wheel-label" style="transform:rotate(${i*45+22.5}deg) translateY(-100px) rotate(-${i*45+22.5}deg)">${p}</span>`).join('')}<button type="button" class="wheel-center wheel-spin-control" id="spin-button" data-spin aria-label="Spin the prize wheel"><span aria-hidden="true">🎁</span><span class="spin-word">SPIN</span></button></div><p id="wheel-balance" style="font-size:22px;font-weight:900"></p><p id="wheel-result" class="muted" aria-live="polite"></p></section>`;updateWheel();
 }
 function updateWheel(){
  const button=$('#spin-button');if(!button)return;
@@ -193,7 +196,7 @@ function updateWheel(){
  const until=Math.max(localCooldown,profile?.last_spin?new Date(profile.last_spin).getTime()+60000:0);
  const remaining=Math.max(0,Math.ceil((until-Date.now())/1000));
  button.disabled=wheelBusy||remaining>0;
- button.textContent=wheelBusy?'Spinning…':remaining?'Next spin in '+remaining+'s':signedIn()?'🎉 SPIN THE WHEEL':'Sign in to spin';
+ button.querySelector('.spin-word').textContent=wheelBusy?'WAIT':remaining?remaining+'s':'SPIN';button.setAttribute('aria-label',wheelBusy?'Spinning':remaining?'Next spin in '+remaining+' seconds':signedIn()?'Spin the prize wheel':'Sign in to spin');
  $('#wheel-balance').textContent='🥤 Your Pop Bucks: '+playerCoins;
  $('#wheel-result').textContent=wheelResult||'Every spin wins Pop Bucks!';
 }
