@@ -63,8 +63,35 @@ let currentUser=(()=>{try{return JSON.parse(localStorage.getItem('plushiepop_acc
 let selectedAvatar=currentUser?.avatar||'🧸',chosenUpload=null;
 function isAdmin(){return currentUser?.name?.trim().toLowerCase()==='nora'}
 function signedIn(){return !!currentUser?.name}
-function accountUI(){document.querySelectorAll('.admin-tab').forEach(x=>x.hidden=!isAdmin());if(!isAdmin()&&(tab==='inventory'||tab==='sales'))tab='shop';document.querySelector('#account-label').textContent=currentUser?.name||'Sign in';document.querySelector('#coin-balance').textContent='🪙 document.querySelector('#header-avatar').innerHTML=currentUser?.photo?'<img src="'+currentUser.photo+'" alt="Profile photo">':(currentUser?.avatar||'👤')}
-function accountModal(){selectedAvatar=currentUser?.avatar||'🧸';chosenUpload=currentUser?.photo||null;document.querySelector('#account-mount').innerHTML='<div class="account-cover"><form class="account-box" id="account-form"><h2>🧸 Join Plushie Pop!</h2><p class="muted">Just a name and a fun profile picture!</p><div class="avatar" id="avatar-preview">'+(chosenUpload?'<img src="'+chosenUpload+'">':selectedAvatar)+'</div><label>Your name</label><input class="field" id="user-name" required maxlength="35" placeholder="Your name" value="'+esc(currentUser?.name||'')+'"><label>Pick your profile picture</label><div class="avatar-grid">'+avatarChoices.map(a=>'<button type="button" class="avatar-option '+(a===selectedAvatar&&!chosenUpload?'selected':'')+'" data-avatar="'+a+'" aria-label="Select '+a+'">'+a+'</button>').join('')+'</div><label>Or upload your own (optional)</label><input id="user-photo" type="file" accept="image/*"><button class="btn primary" type="submit">Let’s shop! ✨</button><p class="muted">No passwords. Names are not verified.</p></form></div>'}
+function accountUI(){
+ document.querySelectorAll('.admin-tab').forEach(x=>x.hidden=!isAdmin());
+ if(!isAdmin()&&(tab==='inventory'||tab==='sales'))tab='shop';
+ document.querySelector('#account-label').textContent=currentUser?.name||'Sign in';
+ document.querySelector('#coin-balance').textContent='🪙 $'+(playerCoins||0);
+ document.querySelector('#header-avatar').innerHTML=currentUser?.photo?'<img src="'+currentUser.photo+'" alt="Profile photo">':(currentUser?.avatar||'👤');
+}
+function accountModal(){
+ selectedAvatar=currentUser?.avatar||'🧸';
+ chosenUpload=currentUser?.photo||null;
+ const choices=avatarChoices.map(a=>`<button type="button" class="avatar-option ${a===selectedAvatar&&!chosenUpload?'selected':''}" data-avatar="${a}" aria-label="Select ${a}">${a}</button>`).join('');
+ const preview=chosenUpload?`<img src="${chosenUpload}" alt="Your profile photo">`:selectedAvatar;
+ document.querySelector('#account-mount').innerHTML=`
+ <div class="account-cover">
+  <form class="account-box" id="account-form">
+   <h2>🧸 Join Plushie Pop!</h2>
+   <p class="muted">Just a name and a fun profile picture!</p>
+   <div class="avatar" id="avatar-preview">${preview}</div>
+   <label for="user-name">Your name</label>
+   <input class="field" id="user-name" required maxlength="35" placeholder="Your name" value="${esc(currentUser?.name||'')}">
+   <label>Pick your profile picture</label>
+   <div class="avatar-grid">${choices}</div>
+   <label for="user-photo">Or upload your own (optional)</label>
+   <input id="user-photo" type="file" accept="image/*">
+   <button class="btn primary" type="submit">Let's shop! ✨</button>
+   <p class="muted">No passwords. Names are not verified.</p>
+  </form>
+ </div>`;
+}
 document.addEventListener('click',e=>{let a=e.target.closest('[data-avatar]');if(a){selectedAvatar=a.dataset.avatar;chosenUpload=null;document.querySelector('#avatar-preview').textContent=selectedAvatar;document.querySelectorAll('[data-avatar]').forEach(x=>x.classList.toggle('selected',x===a));return}if(e.target.closest('[data-account]'))accountModal()});
 document.addEventListener('change',async e=>{if(e.target.id!=='user-photo')return;let file=e.target.files?.[0];if(!file)return;try{let src=await new Promise((ok,bad)=>{let reader=new FileReader();reader.onload=()=>ok(reader.result);reader.onerror=bad;reader.readAsDataURL(file)});let img=new Image();await new Promise((ok,bad)=>{img.onload=ok;img.onerror=bad;img.src=src});let c=document.createElement('canvas'),scale=Math.min(1,180/Math.max(img.width,img.height));c.width=Math.max(1,Math.round(img.width*scale));c.height=Math.max(1,Math.round(img.height*scale));c.getContext('2d').drawImage(img,0,0,c.width,c.height);chosenUpload=c.toDataURL('image/jpeg',.7);document.querySelector('#avatar-preview').innerHTML='<img src="'+chosenUpload+'">';document.querySelectorAll('[data-avatar]').forEach(x=>x.classList.remove('selected'))}catch{notify('Could not load photo')}})
 document.addEventListener('submit',e=>{if(e.target.id!=='account-form')return;e.preventDefault();let name=document.querySelector('#user-name').value.trim();if(!name)return;currentUser={name,avatar:selectedAvatar,photo:chosenUpload};try{localStorage.setItem('plushiepop_account_v1',JSON.stringify(currentUser))}catch{}document.querySelector('#account-mount').innerHTML='';accountUI();show();joinPlayer().catch(e=>notify(e.message))});
