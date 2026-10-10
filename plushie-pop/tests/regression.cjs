@@ -28,6 +28,10 @@ const click=s=>{assert.ok($(s),'missing '+s);$(s).click()};
 const submit=()=>$('#account-form').dispatchEvent(new w.Event('submit',{bubbles:true,cancelable:true}));
 (async()=>{
  await flush();assert.equal(errors.length,0,errors.join('\n'));assert.equal(d.querySelectorAll('html').length,1);const visible=d.body.cloneNode(true);visible.querySelectorAll('script').forEach(x=>x.remove());assert.ok(!visible.textContent.includes('function accountModal'));
+ assert.equal($('#account-form').getAttribute('role'),'dialog');assert.equal($('#account-form').getAttribute('aria-modal'),'true');assert.equal(d.activeElement.id,'user-name');assert.ok($('#view').inert);
+ $('#user-name').dispatchEvent(new w.KeyboardEvent('keydown',{key:'Tab',shiftKey:true,bubbles:true,cancelable:true}));assert.ok(d.activeElement.hasAttribute('data-account-close'),'reverse Tab escaped dialog');
+ d.activeElement.dispatchEvent(new w.KeyboardEvent('keydown',{key:'Tab',bubbles:true,cancelable:true}));assert.equal(d.activeElement.id,'user-name');
+ d.dispatchEvent(new w.KeyboardEvent('keydown',{key:'Escape',bubbles:true,cancelable:true}));await flush();assert.equal($('#account-form'),null);assert.ok(!$('#view').inert);click('[data-account]');await flush();
  assert.equal(d.querySelectorAll('[data-avatar]').length,10);$('#user-name').value='Tester';[...d.querySelectorAll('[data-avatar]')].find(x=>x.dataset.avatar==='🐸').click();submit();await flush();
  assert.equal($('#account-label').textContent,'Tester');assert.equal($('#coin-balance').textContent,'🪙 $0');assert.equal($('#account-form'),null);assert.ok([...d.querySelectorAll('.admin-tab')].every(x=>x.hidden));
  click('[data-tab="wheel"]');assert.equal(d.querySelectorAll('.wheel-label').length,8);click('[data-spin]');await flush();const wheel=$('#wheel-visual');assert.ok($('#spin-button').disabled);
@@ -41,7 +45,10 @@ const submit=()=>$('#account-form').dispatchEvent(new w.Event('submit',{bubbles:
  click('[data-account]');[...d.querySelectorAll('[data-avatar]')].find(x=>x.dataset.avatar==='🐰').click();submit();await flush();assert.equal(players[0].avatar,'🐰');
  click('[data-account]');$('#user-name').value='Other';failJoin=true;submit();await flush();assert.equal($('#account-label').textContent,'Tester');assert.match($('#account-error').textContent,/unavailable/);failJoin=false;click('[data-account-close]');
  click('[data-account]');click('[data-signout]');assert.equal($('#account-label').textContent,'Sign in');assert.equal($('#coin-balance').textContent,'🪙 $0');assert.match($('#cart').textContent,/lonely/);
- click('[data-account]');$('#user-name').value='Nora';submit();await flush();assert.ok([...d.querySelectorAll('.admin-tab')].every(x=>!x.hidden));click('[data-tab="inventory"]');assert.equal($('#taxrate'),null);
+ click('[data-add="1"]');assert.ok(!$('#mobile-cart').hidden);assert.match($('#mobile-cart').textContent,/1 item/);assert.equal($('#coin-balance').closest('header')?.tagName,'HEADER');
+ click('[data-checkout]');await flush();$('#user-name').value='Nora';submit();await flush();assert.match($('#cart').textContent,/Purple Horned Creature/,'guest cart lost at sign-in');assert.ok($('#modal [data-complete]'),'checkout did not resume');assert.ok($('#modal [data-complete]').disabled);assert.ok($('#modal [data-earn]'));assert.equal($('#modal .modal').getAttribute('role'),'dialog');
+ click('[data-earn]');await flush();assert.ok($('#spin-button'));assert.equal($('#modal').textContent,'');assert.ok(!$('#view').inert);assert.ok($('#mobile-cart').hidden);assert.equal($('[data-tab="wheel"]').getAttribute('aria-current'),'page');
+ assert.ok([...d.querySelectorAll('.admin-tab')].every(x=>!x.hidden));click('[data-tab="inventory"]');assert.equal($('#taxrate'),null);
  failStock=true;click('[data-tab="shop"]');await intervals.find(x=>x.ms===12000).fn();assert.match($('#shared-status').textContent,/Offline/);assert.ok([...d.querySelectorAll('[data-add]')].every(x=>x.disabled));
  assert.equal(errors.length,0,errors.join('\n'));console.log('PASS: signup, 10 avatars, zero coins, admin visibility, wheel alignment, countdown, navigation, polling, search focus, one purchase, balance/collection sync, player selection, profile save/failure, signout, offline guard.');dom.window.close();
 })().catch(e=>{console.error(e);dom.window.close();process.exitCode=1});

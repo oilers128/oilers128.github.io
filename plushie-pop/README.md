@@ -39,6 +39,25 @@ insufficient funds, overselling, and fractional-price rejection. Existing
 players, balances and stock were preserved. Order sequences may have gaps
 because PostgreSQL sequences are not rolled back.
 
+## Responsive and accessibility polish
+
+- Four-column phone navigation keeps Shop, Play, My Plushies and Players
+  visible without horizontal scrolling. Admin tabs occupy a second row.
+- Coin balance sits beside the profile; phone/tablet layouts offer a floating
+  cart summary that jumps directly to the cart. Desktop retains the side cart.
+- Cart quantity and dialog close controls are 44px; product buttons are 48px.
+- Profile and checkout dialogs have accessible names, focus trapping, focus
+  restoration, inert backgrounds, scroll locking, Escape/backdrop dismissal,
+  and protection against dismissal during an in-flight save or purchase.
+- First-time sign-in preserves the guest cart and resumes checkout. Switching
+  between existing named profiles still clears the previous account's cart.
+- Insufficient-balance checkout offers an Earn coins shortcut. Selected avatars
+  and current navigation are exposed to assistive technology; reduced-motion
+  preferences disable transitions. Smaller layouts use readable, wrapping text.
+- Regression tests cover guest checkout, the shortcut, keyboard dialog behavior,
+  current-navigation state, and the floating cart's visibility. These are DOM
+  tests, not substitutes for real phone/tablet rendering checks.
+
 ## Remaining design limitations
 
 Nickname-only profiles are intentionally retained, not secure authentication.
