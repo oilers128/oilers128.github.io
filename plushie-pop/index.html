@@ -102,7 +102,7 @@ async function refreshShared(){
  if(busy||purchaseBusy)return;busy=true;
  try{
   const stock=await api('/plush_products?select=id,name,price,stock,prestige&order=id.asc');
-  products=stock.map(p=>({...seed.find(x=>x.id===p.id),emoji:'🧸',color:'#eed3fb',...seed.find(x=>x.id===p.id),...p,price:Number(p.price)}));
+  products=stock.map(p=>({...seed.find(x=>x.id===p.id),emoji:'🧸',color:'#eed3fb',...seed.find(x=>x.id===p.id),...p,price:Number(p.price),...(p.id===15?{photoData:'https://oilers128.github.io/plushie-pop/images/besties-legendary.svg?v=2',emoji:'💕',prestige:5}: {})}));
   for(const id of Object.keys(cart)){const p=products.find(p=>p.id===Number(id));if(!p)delete cart[id];else cart[id]=1}
   sharedReady=true;sharedStatus='🟢 Collection connected';
   if(isAdmin())try{const orders=await api('/plush_orders?select=id,created_at,items,total&order=id.desc&limit=150');sales=orders.map(o=>({number:o.id,date:o.created_at,method:'Pop Bucks',items:o.items,total:Number(o.total),subtotal:Number(o.total),tax:0}))}catch(e){console.warn(e)}
